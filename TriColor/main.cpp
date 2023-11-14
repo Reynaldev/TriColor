@@ -96,8 +96,13 @@ int main(int argc, char** argv)
 	// Triangle config
 	// Triangle color 
 	ImVec4 colors = ImVec4(1.0f, 0.3f, 0.1f, 1.0f);
+	// Triangle position
+	float position[] = { 0.0f, 0.0f, 0.0f };
+
 	// Uniform location for "uColor"
 	int tColor = glGetUniformLocation(tShader.ID, "uColor");
+	// Uniform location for "uPos"
+	int tPos = glGetUniformLocation(tShader.ID, "uPos");
 
 	// ImGui config
 	// Enable/Disable demo window, self-explanatory
@@ -107,15 +112,26 @@ int main(int argc, char** argv)
 
 	while (!glfwWindowShouldClose(window))
 	{
+		// Input
+		if (GLFW_PRESS == (glfwGetKey(window, GLFW_KEY_W) | glfwGetKey(window, GLFW_KEY_UP)))
+		{
+			position[1] += 0.01f;
+		}
+		if (GLFW_PRESS == (glfwGetKey(window, GLFW_KEY_A) | glfwGetKey(window, GLFW_KEY_LEFT)))
+		{
+			position[0] -= 0.01f;
+		}
+		if (GLFW_PRESS == (glfwGetKey(window, GLFW_KEY_S) | glfwGetKey(window, GLFW_KEY_DOWN)))
+		{
+			position[1] -= 0.01f;
+		}
+		if (GLFW_PRESS == (glfwGetKey(window, GLFW_KEY_D) | glfwGetKey(window, GLFW_KEY_RIGHT)))
+		{
+			position[0] += 0.01f;
+		}
+
 		glClearColor(0.1f, 0.2f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
-
-		// Viewport
-		tShader.use();
-		glBindVertexArray(VAO);
-		glUniform3f(tColor, colors.x, colors.y, colors.z);
-		glDrawArrays(GL_TRIANGLES, 0, 3);
-		glBindVertexArray(0);
 
 		// UI
 		ImGui_ImplOpenGL3_NewFrame();
@@ -151,17 +167,63 @@ int main(int argc, char** argv)
 			ImGui::Begin("Triangle Config", &showConfigWindow);
 
 			// Color picker
-			bool tColorPicker = ImGuiColorEditFlags_DisplayRGB | ImGuiColorEditFlags_PickerHueWheel;
+			if (ImGui::TreeNode("Color"))
+			{
+				bool tColorPickerFlags = ImGuiColorEditFlags_DisplayRGB | ImGuiColorEditFlags_PickerHueWheel;
 
-			ImGui::SeparatorText("Color Picker");
-			ImGui::ColorPicker3("Triangle Color", (float*)&colors, tColorPicker);
+				ImGui::ColorPicker3("Triangle Color", (float*)&colors, tColorPickerFlags);
 
+				ImGui::TreePop();
+			}
+
+			// Triangle position
+			if (ImGui::TreeNode("Position"))
+			{
+				ImGui::Text("You can move the triangle by pressing WASD/Arrow keys.");
+
+				if (ImGui::ArrowButton("Left", ImGuiDir_Left)) 
+				{
+					position[0] -= 0.01f;
+				}
+				ImGui::SameLine();
+				if (ImGui::ArrowButton("Up", ImGuiDir_Up)) 
+				{
+					position[1] += 0.01f;
+				}
+				ImGui::SameLine();
+				if (ImGui::ArrowButton("Down", ImGuiDir_Down)) 
+				{
+					position[1] -= 0.01f;
+				}
+				ImGui::SameLine();
+				if (ImGui::ArrowButton("Right", ImGuiDir_Right)) 
+				{
+					position[0] += 0.01f;
+				}
+
+				if (ImGui::Button("Reset", ImVec2(50, 25)))
+				{
+					position[0] = 0.0f;
+					position[1] = 0.0f;
+				}
+
+				ImGui::TreePop();
+			}
+				
 			ImGui::End();
 		}
 
 		// Demo window
 		if (showDemoWindow)
 			ImGui::ShowDemoWindow(&showDemoWindow);
+
+		// Viewport
+		tShader.use();
+		glBindVertexArray(VAO);
+		glUniform3f(tColor, colors.x, colors.y, colors.z);
+		glUniform3f(tPos, position[0], position[1], 0.0f);
+		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glBindVertexArray(0);
 
 		// Render
 		ImGui::Render();
