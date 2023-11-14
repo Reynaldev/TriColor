@@ -77,7 +77,7 @@ int main(int argc, char** argv)
 	// Shaders
 	Shader tShader("TriangleVertex.glsl", "TriangleFragment.glsl");
 
-	// Vertex buffers
+	// Buffers
 	GLuint VBO, VAO;
 	glGenBuffers(1, &VBO);
 	glGenVertexArrays(1, &VAO);
@@ -93,44 +93,77 @@ int main(int argc, char** argv)
 	glEnableVertexAttribArray(1);
 	glBindVertexArray(0);
 
-	// Triangle init
+	// Triangle config
+	// Triangle color 
+	ImVec4 colors = ImVec4(1.0f, 0.3f, 0.1f, 1.0f);
+	// Uniform location for "uColor"
 	int tColor = glGetUniformLocation(tShader.ID, "uColor");
 
-	// Window config
+	// ImGui config
+	// Enable/Disable demo window, self-explanatory
+	bool showDemoWindow = false;
+	// Enable/Disable triangle configuration window
 	bool showConfigWindow = true;
 
 	while (!glfwWindowShouldClose(window))
 	{
-		static ImVec4 colors = ImVec4(0.2f, 0.3f, 0.1f, 1.0f);
-
 		glClearColor(0.1f, 0.2f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		// Viewport render
+		// Viewport
 		tShader.use();
 		glBindVertexArray(VAO);
 		glUniform3f(tColor, colors.x, colors.y, colors.z);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 		glBindVertexArray(0);
 
+		// UI
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
+		// Main menu bar
 		if (ImGui::BeginMainMenuBar())
 		{
+			if (ImGui::BeginMenu("File"))
+			{
+				if (ImGui::MenuItem("Exit"))
+					break;
+
+				ImGui::EndMenu();
+			}
+
+			if (ImGui::BeginMenu("Tools"))
+			{
+				ImGui::MenuItem("Triangle Config", NULL, &showConfigWindow);
+				ImGui::Separator();
+				ImGui::MenuItem("Demo window", NULL, &showDemoWindow);
+
+				ImGui::EndMenu();
+			}
+
 			ImGui::EndMainMenuBar();
 		}
-		
-		// UI render
-		if (ImGui::Begin("Playground", &showConfigWindow))
+
+		/* Show/Unshow window for triangle configuration */
+		if (showConfigWindow)
 		{
+			ImGui::Begin("Triangle Config", &showConfigWindow);
+
+			// Color picker
+			bool tColorPicker = ImGuiColorEditFlags_DisplayRGB | ImGuiColorEditFlags_PickerHueWheel;
+
 			ImGui::SeparatorText("Color Picker");
-			ImGui::ColorEdit4("Triangle Color", &colors.x, ImGuiColorEditFlags_NoInputs);
+			ImGui::ColorPicker3("Triangle Color", (float*)&colors, tColorPicker);
 
 			ImGui::End();
 		}
 
+		// Demo window
+		if (showDemoWindow)
+			ImGui::ShowDemoWindow(&showDemoWindow);
+
+		// Render
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
