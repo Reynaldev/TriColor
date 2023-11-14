@@ -167,17 +167,19 @@ int main(int argc, char** argv)
 			ImGui::Begin("Triangle Config", &showConfigWindow);
 
 			// Color picker
-			if (ImGui::TreeNode("Color"))
+			if (ImGui::CollapsingHeader("Color"))
 			{
-				bool tColorPickerFlags = ImGuiColorEditFlags_DisplayRGB | ImGuiColorEditFlags_PickerHueWheel;
+				ImGuiColorEditFlags tColorPickerFlags;
+				tColorPickerFlags |= ImGuiColorEditFlags_DisplayRGB;
+				tColorPickerFlags |= ImGuiColorEditFlags_DisplayHSV;
+				tColorPickerFlags |= ImGuiColorEditFlags_PickerHueWheel;
+				tColorPickerFlags |= ImGuiColorEditFlags_NoSidePreview;
 
 				ImGui::ColorPicker3("Triangle Color", (float*)&colors, tColorPickerFlags);
-
-				ImGui::TreePop();
 			}
 
 			// Triangle position
-			if (ImGui::TreeNode("Position"))
+			if (ImGui::CollapsingHeader("Position"))
 			{
 				ImGui::Text("You can move the triangle by pressing WASD/Arrow keys.");
 
@@ -206,8 +208,6 @@ int main(int argc, char** argv)
 					position[0] = 0.0f;
 					position[1] = 0.0f;
 				}
-
-				ImGui::TreePop();
 			}
 				
 			ImGui::End();
