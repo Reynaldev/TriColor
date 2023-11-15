@@ -109,9 +109,13 @@ int main(int argc, char** argv)
 	bool showDemoWindow = false;
 	// Enable/Disable triangle configuration window
 	bool showConfigWindow = true;
+	// Enable/Disable triangle color animation cycle
+	bool enableTriangleColorAnim = false;
 
 	while (!glfwWindowShouldClose(window))
 	{
+		float timeVal = (float)glfwGetTime();
+
 		// Input
 		if (GLFW_PRESS == (glfwGetKey(window, GLFW_KEY_W) | glfwGetKey(window, GLFW_KEY_UP)))
 		{
@@ -176,6 +180,14 @@ int main(int argc, char** argv)
 				tColorPickerFlags |= ImGuiColorEditFlags_NoSidePreview;
 
 				ImGui::ColorPicker3("Triangle Color", (float*)&colors, tColorPickerFlags);
+
+				ImGui::Checkbox("Animate", &enableTriangleColorAnim);
+				ImGui::SetItemTooltip("Enable/Disable a wave color animation on the triangle");
+				if (enableTriangleColorAnim)
+				{
+					ImGui::PlotHistogram("RGB Value", (float*)&colors, 3, 
+						0, NULL, 0.0f, 1.0f, ImVec2(0, 75.0f));
+				}
 			}
 
 			// Triangle position
@@ -217,6 +229,14 @@ int main(int argc, char** argv)
 		if (showDemoWindow)
 			ImGui::ShowDemoWindow(&showDemoWindow);
 
+		// If enabled, Calculate RGB color to make a rainbow wave color
+		if (enableTriangleColorAnim)
+		{
+			colors.x = (cos(timeVal) / 2.0f) + 0.5f;
+			colors.y = (sin(timeVal) / 2.0f) + 0.5f;
+			colors.z = (sin(timeVal + 30.0f) / 2.0f) + 0.5f;
+		}
+
 		// Viewport
 		tShader.use();
 		glBindVertexArray(VAO);
@@ -234,6 +254,8 @@ int main(int argc, char** argv)
 	}
 
 end:
+	printf("Exiting TriColor");
+
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
