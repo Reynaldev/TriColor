@@ -30,6 +30,40 @@ string getFilePath(string filename)
 	return filePath;
 }
 
+/*
+A function that takes an array of HSV and convert it to RGB.
+*/ 
+ImVec4 hsv2rgb(ImVec4 hsv)
+{
+	hsv.x /= 255.0f;
+	hsv.y /= 255.0f;
+	hsv.z /= 255.0f;
+
+	int hi = ((int)hsv.x * 6) % 6;
+	int f = hsv.x * 6 - hi;
+	int p = hsv.z * (1 - hsv.y);
+	int q = hsv.z * (1 - f * hsv.y);
+	int t = hsv.z * (1 - (1 - f) * hsv.y);
+
+	printf("hi: %d, f: %d, p: %d, q: %d, t: %d\n", hi, f, p, q, t);
+
+	switch (hi)
+	{
+	case 0:
+		return ImVec4(hsv.z, t, p, 1.0f);
+	case 1:
+		return ImVec4(q, hsv.z, p, 1.0f);
+	case 2:
+		return ImVec4(p, hsv.z, t, 1.0f);
+	case 3:
+		return ImVec4(p, q, hsv.z, 1.0f);
+	case 4:
+		return ImVec4(t, p, hsv.z, 1.0f);
+	default:
+		return ImVec4(hsv.z, p, q, 1.0f);
+	}
+}
+
 int main(int argc, char** argv)
 {
 	// Init
@@ -179,15 +213,13 @@ int main(int argc, char** argv)
 				tColorPickerFlags |= ImGuiColorEditFlags_PickerHueWheel;
 				tColorPickerFlags |= ImGuiColorEditFlags_NoSidePreview;
 
-				ImGui::ColorPicker3("Triangle Color", (float*)&colors, tColorPickerFlags);
-
 				ImGui::Checkbox("Animate", &enableTriangleColorAnim);
 				ImGui::SetItemTooltip("Enable/Disable a wave color animation on the triangle");
-				if (enableTriangleColorAnim)
-				{
-					ImGui::PlotHistogram("RGB Value", (float*)&colors, 3, 
-						0, NULL, 0.0f, 1.0f, ImVec2(0, 75.0f));
-				}
+
+				ImGui::ColorPicker3("Triangle Color", (float*)&colors, tColorPickerFlags);
+				
+				ImGui::PlotHistogram("RGB graph", (float*)&colors, 3,
+					0, NULL, 0.0f, 1.0f, ImVec2(0, 75.0f));
 			}
 
 			// Triangle position
@@ -232,9 +264,7 @@ int main(int argc, char** argv)
 		// If enabled, Calculate RGB color to make a rainbow wave color
 		if (enableTriangleColorAnim)
 		{
-			colors.x = (cos(timeVal) / 2.0f) + 0.5f;
-			colors.y = (sin(timeVal) / 2.0f) + 0.5f;
-			colors.z = (sin(timeVal + 30.0f) / 2.0f) + 0.5f;
+			colors = hsv2rgb(ImVec4(sin(timeVal) * 255.0f, 255.0f, 255.0f, 1.0f));
 		}
 
 		// Viewport
