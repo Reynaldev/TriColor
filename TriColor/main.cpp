@@ -227,6 +227,8 @@ int main(int argc, char** argv)
 			{
 				ImGui::Text("You can move the triangle by pressing WASD/Arrow keys.");
 
+				ImGui::Text("X: %.2f\tY: %.2f", position[0], position[1]);
+
 				if (ImGui::ArrowButton("Left", ImGuiDir_Left)) 
 				{
 					position[0] -= 0.01f;
@@ -266,6 +268,16 @@ int main(int argc, char** argv)
 		{
 			colors = hsv2rgb(ImVec4(sin(timeVal) * 255.0f, 255.0f, 255.0f, 1.0f));
 		}
+
+		// Border check
+		if ((position[0]) >= 0.5f)
+			position[0] = 0.5f;
+		if ((position[0]) <= -0.5f)
+			position[0] = -0.5f;
+		if ((position[1]) >= 0.5f)
+			position[1] = 0.5f;
+		if ((position[1]) <= -0.5f)
+			position[1] = -0.5f;
 
 		// Viewport
 		tShader.use();
